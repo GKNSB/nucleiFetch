@@ -16,7 +16,6 @@ repos =    ["https://github.com/projectdiscovery/nuclei-templates.git",
 			"https://github.com/daffainfo/my-nuclei-templates",
 			"https://github.com/esetal/nuclei-bb-templates",
 			"https://github.com/ethicalhackingplayground/erebus-templates",
-			"https://github.com/foulenzer/foulenzer-templates",
 			"https://github.com/geeknik/nuclei-templates-1",
 			"https://github.com/geeknik/the-nuclei-templates",
 			"https://github.com/Harish4948/Nuclei-Templates",
@@ -68,7 +67,7 @@ def makeDirDict(directory):
 	pm = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 	out, err = pm.communicate()
 	mylist = out.decode("utf-8").split("\n")
-	
+
 	yamls = ([x for x in mylist if x])
 
 	filesAndHashes = []
@@ -126,7 +125,7 @@ def main():
 		print(f"[*] Cloning {repo} into ./tmp/repo{counter}")
 		p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 		p.wait()
-	
+
 	tempDirContents = makeDirDict("./tmp")
 	outDirContents = []
 	print(f"[*] Deduping downloaded files...")
@@ -152,7 +151,7 @@ def main():
 			elif filename == outfilename and filehash != outfilehash:
 				#print(f"[*] Same filename {fileAndHash['file']} and {outFileAndHash['file']}")
 				found = True
-			
+
 			else:
 				pass
 
