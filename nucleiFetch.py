@@ -171,30 +171,6 @@ def main():
 			sortedHashes.append(filehash)
 			sortedHashes.sort()
 		
-
-
-#		for outFileAndHash in outDirContents:
-#			outfilename = outFileAndHash['file'].split("/")[-1]
-#			outfilehash = outFileAndHash['filehash']
-#
-#			if filehash == outfilehash and filename == outfilename:
-#				#print(f"[*] Same both {fileAndHash['file']} and {outFileAndHash['file']}")
-#				found = True
-#
-#			elif filehash == outfilehash and filename != outfilename:
-#				#print(f"[*] Same hash {fileAndHash['file']} and {outFileAndHash['file']}")
-#				found = True
-#
-#			elif filename == outfilename and filehash != outfilehash:
-#				#print(f"[*] Same filename {fileAndHash['file']} and {outFileAndHash['file']}")
-#				found = True
-#
-#			else:
-#				pass
-#
-#		if not found:
-#			outDirContents.append(fileAndHash)
-
 	populateDirectories(outDirContents)
 
 	print(f"[*] Total templates: {len(tempDirContents)}")
