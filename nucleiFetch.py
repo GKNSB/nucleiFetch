@@ -1,5 +1,6 @@
 import os
 import shutil
+import bisect
 import hashlib
 import subprocess
 
@@ -34,7 +35,6 @@ repos =    ["https://github.com/projectdiscovery/nuclei-templates.git",
 			"https://github.com/peanuth8r/Nuclei_Templates",
 			"https://github.com/pikpikcu/my-nuclei-templates",
 			"https://github.com/pikpikcu/nuclei-templates",
-			"https://github.com/projectdiscovery/nuclei-templates.git",
 			"https://github.com/R-s0n/Custom_Vuln_Scan_Templates",
 			"https://github.com/rafaelcaria/Nuclei-Templates",
 			"https://github.com/rahulkadavil/nuclei-templates",
@@ -55,7 +55,8 @@ repos =    ["https://github.com/projectdiscovery/nuclei-templates.git",
 			"https://github.com/thelabda/nuclei-templates",
 			"https://github.com/yavolo/nuclei-templates",
 			"https://github.com/z3bd/nuclei-templates",
-			"https://github.com/zinminphyo0/KozinTemplates"]
+			"https://github.com/zinminphyo0/KozinTemplates",
+			"https://github.com/dwisiswant0/nuclei-templates.git"]
 
 
 def getMD5(file):
@@ -82,6 +83,7 @@ def initDirectories():
 	os.makedirs("./templates-previous/", exist_ok=True)
 	os.makedirs("./templates-onlynew/", exist_ok=True)
 	os.makedirs("./templates-latest/", exist_ok=True)
+
 
 def cleanDirectories():
 	folders = os.listdir("./tmp/")
@@ -114,6 +116,11 @@ def populateDirectories(items):
 			shutil.copy(filename, "./templates-onlynew/")
 
 
+def inSortedList(elem, sorted_list):
+	i = bisect.bisect_left(sorted_list, elem)
+	return i != len(sorted_list) and sorted_list[i] == elem
+
+
 def main():
 	initDirectories()
 	cleanDirectories()
@@ -126,9 +133,21 @@ def main():
 		p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 		p.wait()
 
+		os.mkdir(f"./tmp/repo{counter}/arandomdirname/")
+		os.chdir(f"./tmp/repo{counter}")
+
+		command = f"for item in `git for-each-ref refs/remotes/origin --format='%(refname)' | grep -v 'HEAD$'`; do echo -n ./arandomdirname/`echo $item | rev | cut -d\"/\" -f1 | rev`; echo -n \" \"; echo $item; done | xargs -n 2 git worktree add"
+		p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+		p.wait()
+
+		os.chdir(f"../../")
+
 	tempDirContents = makeDirDict("./tmp")
 	outDirContents = []
 	print(f"[*] Deduping downloaded files...")
+
+	sortedNames = []
+	sortedHashes = []
 
 	for fileAndHash in tempDirContents:
 		filename = fileAndHash['file'].split("/")[-1]
@@ -136,31 +155,49 @@ def main():
 
 		found = False
 
-		for outFileAndHash in outDirContents:
-			outfilename = outFileAndHash['file'].split("/")[-1]
-			outfilehash = outFileAndHash['filehash']
-
-			if filehash == outfilehash and filename == outfilename:
-				#print(f"[*] Same both {fileAndHash['file']} and {outFileAndHash['file']}")
-				found = True
-
-			elif filehash == outfilehash and filename != outfilename:
-				#print(f"[*] Same hash {fileAndHash['file']} and {outFileAndHash['file']}")
-				found = True
-
-			elif filename == outfilename and filehash != outfilehash:
-				#print(f"[*] Same filename {fileAndHash['file']} and {outFileAndHash['file']}")
-				found = True
-
-			else:
-				pass
-
-		if not found:
+		if inSortedList(filehash, sortedHashes) and inSortedList(filename, sortedNames):
+			found = True
+		
+		elif inSortedList(filehash, sortedHashes) and not inSortedList(filename, sortedNames):
+			found = True
+		
+		elif inSortedList(filename, sortedNames) and not inSortedList(filehash, sortedHashes):
+			found = True
+		
+		else:
 			outDirContents.append(fileAndHash)
+			sortedNames.append(filename)
+			sortedNames.sort()
+			sortedHashes.append(filehash)
+			sortedHashes.sort()
+		
+
+
+#		for outFileAndHash in outDirContents:
+#			outfilename = outFileAndHash['file'].split("/")[-1]
+#			outfilehash = outFileAndHash['filehash']
+#
+#			if filehash == outfilehash and filename == outfilename:
+#				#print(f"[*] Same both {fileAndHash['file']} and {outFileAndHash['file']}")
+#				found = True
+#
+#			elif filehash == outfilehash and filename != outfilename:
+#				#print(f"[*] Same hash {fileAndHash['file']} and {outFileAndHash['file']}")
+#				found = True
+#
+#			elif filename == outfilename and filehash != outfilehash:
+#				#print(f"[*] Same filename {fileAndHash['file']} and {outFileAndHash['file']}")
+#				found = True
+#
+#			else:
+#				pass
+#
+#		if not found:
+#			outDirContents.append(fileAndHash)
 
 	populateDirectories(outDirContents)
 
-	print(f"[*] Total tempaltes: {len(tempDirContents)}")
+	print(f"[*] Total templates: {len(tempDirContents)}")
 	print(f"[*] Unique templates: {len(os.listdir('./templates-latest/'))}")
 	print(f"[*] New templates: {len(os.listdir('./templates-onlynew/'))}")
 
