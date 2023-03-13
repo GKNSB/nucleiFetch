@@ -56,7 +56,8 @@ repos =    ["https://github.com/projectdiscovery/nuclei-templates.git",
 			"https://github.com/yavolo/nuclei-templates",
 			"https://github.com/z3bd/nuclei-templates",
 			"https://github.com/zinminphyo0/KozinTemplates",
-			"https://github.com/dwisiswant0/nuclei-templates.git"]
+			"https://github.com/dwisiswant0/nuclei-templates.git",
+	   		"https://github.com/badboycxcc/POC.git"]
 
 
 def getMD5(file):
