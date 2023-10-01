@@ -48,7 +48,6 @@ https://github.com/thebrnwal/Content-Injection-Nuclei-Script
 https://github.com/thelabda/nuclei-templates
 https://github.com/yavolo/nuclei-templates
 https://github.com/z3bd/nuclei-templates
-https://github.com/zinminphyo0/KozinTemplates
 https://github.com/badboycxcc/POC.git
 https://github.com/0xAwali/Virtual-Host
 https://github.com/0xPugazh/my-nuclei-templates
