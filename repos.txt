@@ -91,7 +91,6 @@ https://github.com/kh4sh3i/CVE-2022-23131
 https://github.com/luck-ying/Library-YAML-POC
 https://github.com/mastersir-lab/nuclei-yaml-poc
 https://github.com/mbskter/Masscan2Httpx2Nuclei-Xray
-https://github.com/p0ch4t/nuclei-special-templates
 https://github.com/pentest-dev/Profesional-Nuclei-Templates
 https://github.com/ping-0day/templates
 https://github.com/praetorian-inc/chariot-launch-nuclei-templates
