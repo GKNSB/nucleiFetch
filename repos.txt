@@ -56,7 +56,6 @@ https://github.com/Akokonunes/Private-Nuclei-Templates
 https://github.com/Arvinthksrct/alltemplate
 https://github.com/DoubleTakes/nuclei-templates
 https://github.com/Elsfa7-110/mynuclei-templates
-https://github.com/ExpLangcn/NucleiTP
 https://github.com/Hunt2behunter/nuclei-templates
 https://github.com/Jagomeiister/nuclei-templates
 https://github.com/JoshMorrison99/url-based-nuclei-templates
