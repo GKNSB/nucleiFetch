@@ -99,7 +99,6 @@ https://github.com/ricardomaia/nuclei-template-generator-for-wordpress-plugins
 https://github.com/sl4x0/NC-Templates
 https://github.com/soapffz/myown-nuclei-poc
 https://github.com/soumya123raj/Nuclei
-https://github.com/souzomain/mytemplates
 https://github.com/tamimhasan404/Open-Source-Nuclei-Templates-Downloader
 https://github.com/th3r4id/nuclei-templates
 https://github.com/thecyberneh/nuclei-templatess
