@@ -108,6 +108,8 @@ def main():
 			p.wait()
 
 			os.chdir(f"../../")
+		else:
+			print(f"[-] Broken repo: {repo}")
 
 	tempDirContents = makeDirDict("./tmp")
 	outDirContents = []
