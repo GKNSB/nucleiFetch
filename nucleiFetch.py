@@ -2,6 +2,7 @@ import os
 import shutil
 import bisect
 import hashlib
+import requets
 import subprocess
 
 
@@ -75,6 +76,15 @@ def readRepos():
 	return lines
 
 
+def checkRepo(repo):
+	headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"}
+	resp = requets.get(repo, headers=headers)
+	if resp.status_code == 404:
+		return False
+	else:
+		return True
+
+
 def main():
 	initDirectories()
 	cleanDirectories()
@@ -83,19 +93,21 @@ def main():
 
 	for repo in repos:
 		counter += 1
-		command = f"git clone {repo} ./tmp/repo{counter}"
-		print(f"[*] Cloning {repo} into ./tmp/repo{counter}")
-		p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-		p.wait()
+		
+		if checkRepo(repo):
+			command = f"git clone {repo} ./tmp/repo{counter}"
+			print(f"[*] Cloning {repo} into ./tmp/repo{counter}")
+			p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+			p.wait()
 
-		os.mkdir(f"./tmp/repo{counter}/arandomdirname/")
-		os.chdir(f"./tmp/repo{counter}")
+			os.mkdir(f"./tmp/repo{counter}/arandomdirname/")
+			os.chdir(f"./tmp/repo{counter}")
 
-		command = f"for item in `git for-each-ref refs/remotes/origin --format='%(refname)' | grep -v 'HEAD$'`; do echo -n ./arandomdirname/`echo $item | rev | cut -d\"/\" -f1 | rev`; echo -n \" \"; echo $item; done | xargs -n 2 git worktree add"
-		p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-		p.wait()
+			command = f"for item in `git for-each-ref refs/remotes/origin --format='%(refname)' | grep -v 'HEAD$'`; do echo -n ./arandomdirname/`echo $item | rev | cut -d\"/\" -f1 | rev`; echo -n \" \"; echo $item; done | xargs -n 2 git worktree add"
+			p = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+			p.wait()
 
-		os.chdir(f"../../")
+			os.chdir(f"../../")
 
 	tempDirContents = makeDirDict("./tmp")
 	outDirContents = []
