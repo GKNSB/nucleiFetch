@@ -162,9 +162,9 @@ https://github.com/solo10010/solo-nuclei-templates
 https://github.com/srkgupta/cent-nuclei-templates
 https://github.com/szybnev/nuclei-custom
 https://github.com/thanhnx9/nuclei-templates-cutomer
-https://github.com/themastersunil/Nuclei-TamplatesBackup.git
+https://github.com/themastersunil/Nuclei-TamplatesBackup
 https://github.com/themastersunil/nucleiDB
-https://github.com/themoonbaba/private_templates/blob/main/springboot_heapdump.yaml
+https://github.com/themoonbaba/private_templates
 https://github.com/trungkay2/Nuclei-template
 https://github.com/v3l4r10/Nuclei-Templates
 https://github.com/valaDevs/nuclei-backupfile-finder
