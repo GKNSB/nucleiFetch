@@ -2,7 +2,7 @@ import os
 import shutil
 import bisect
 import hashlib
-import requets
+import requests
 import subprocess
 
 
