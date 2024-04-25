@@ -1,4 +1,5 @@
 https://github.com/projectdiscovery/nuclei-templates
+https://github.com/NagliNagli/Shockwave-OSS.git
 https://github.com/0x727/ObserverWard_0x727
 https://github.com/1in9e/my-nuclei-templates
 https://github.com/5cr1pt/templates
