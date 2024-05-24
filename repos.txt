@@ -69,7 +69,6 @@ https://github.com/Odayex/Random-Nuclei-Templates
 https://github.com/PedroFerreira97/nuclei_templates
 https://github.com/SirAppSec/nuclei-template-generator-log4j
 https://github.com/SumedhDawadi/Custom-Nuclei-Template
-https://github.com/adampielak/nuclei-templates
 https://github.com/aels/CVE-2022-37042
 https://github.com/alexrydzak/rydzak-nuclei-templates
 https://github.com/ayadim/Nuclei-bug-hunter
