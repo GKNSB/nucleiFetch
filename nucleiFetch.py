@@ -4,6 +4,11 @@ import bisect
 import hashlib
 import requests
 import subprocess
+from hashlib import md5
+import Levenshtein
+
+
+MAX_FILE_SIZE = 100 * 1024  # 100 KB
 
 
 def getMD5(file):
@@ -56,7 +61,7 @@ def cleanDirectories():
 
 def populateDirectories(items):
 	for item in items:
-		filename = item["file"]
+		filename = item
 		shutil.copy(filename, "./templates-latest/")
 
 		if filename.split("/")[-1] not in os.listdir("./templates-previous"):
@@ -83,6 +88,158 @@ def checkRepo(repo):
 		return False
 	else:
 		return True
+
+
+def read_file_as_binary(file_path):
+	try:
+		with open(file_path, 'rb') as file:
+			return file.read()
+	except Exception as e:
+		print(f"Error reading file {file_path}: {e}")
+		return b""
+
+
+def remove_id_info_sections(file_content):
+    lines = file_content.splitlines()
+    new_lines = []
+    skip_info = False
+
+    for line in lines:
+        stripped_line = line.strip()
+        if stripped_line.startswith(b'id:'):
+            continue
+        elif stripped_line.startswith(b'info:'):
+            skip_info = True
+            continue
+        elif skip_info:
+            if not line.startswith(b' ') and not stripped_line == (b''):
+                skip_info = False
+        if not skip_info:
+            new_lines.append(line)
+    
+    return b"\n".join(new_lines)
+
+
+def hash_content(content):
+	return md5(content).hexdigest()
+
+
+def second_deduplication(file_paths):
+	seen_hashes = set()
+	deduped_files = set()
+	
+	for file in file_paths:
+		try:
+			file_content = read_file_as_binary(file)
+			if file_content == b"":
+				continue
+			
+			content_without_id_info = remove_id_info_sections(file_content)
+			content_hash = hash_content(content_without_id_info)
+
+			if content_hash not in seen_hashes:
+				seen_hashes.add(content_hash)
+				deduped_files.add(file)
+
+		except Exception as e:
+			print(f"Error processing file {file}: {e}")
+		
+	return deduped_files
+
+
+def read_file_as_binary2(file_path):
+    try:
+        if os.path.getsize(file_path) > MAX_FILE_SIZE:
+            return None
+        with open(file_path, 'rb') as file:
+            return file.read()
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}")
+        return b""
+
+
+def are_files_similar(content1, content2, threshold=2):
+    content1_str = content1.decode('utf-8', errors='ignore')
+    content2_str = content2.decode('utf-8', errors='ignore')
+
+    distance = Levenshtein.distance(content1_str, content2_str)
+
+    return distance <= threshold
+
+
+def third_deduplication(file_paths, similarity_threshold=2, max_recent_files=1000):
+    recent_files = []
+    copied = 0
+    non_similar = set()
+
+    sorted_file_paths = sorted(file_paths, key=lambda x: os.path.basename(x))
+
+    for i, file in enumerate(sorted_file_paths):
+        try:
+            file_content = read_file_as_binary2(file)
+            if file_content is None:
+                non_similar.add(file)
+                copied += 1
+                recent_files.append(file)
+                if len(recent_files) > max_recent_files:
+                    recent_files.pop(0)
+                continue
+            if file_content == b"":
+                continue
+
+            content_without_id_info = remove_id_info_sections(file_content)
+
+            is_unique = True
+            for recent_file in recent_files:
+                recent_file_content = read_file_as_binary2(recent_file)
+                if recent_file_content is None:
+                    continue
+                recent_content = remove_id_info_sections(recent_file_content)
+                if are_files_similar(content_without_id_info, recent_content, similarity_threshold):
+                    is_unique = False
+                    break
+
+            if is_unique:
+                recent_files.append(file)
+                if len(recent_files) > max_recent_files:
+                    recent_files.pop(0)
+                non_similar.add(file)
+                copied += 1
+        except Exception as e:
+            print(f"Error processing file {file}: {e}")
+
+    return non_similar
+
+
+def first_deduplication(tempDirContents):
+	sortedNames = []
+	sortedFilepath = []
+	sortedHashes = []
+
+	for fileAndHash in tempDirContents:
+		filename = fileAndHash['file'].split("/")[-1]
+		filehash = fileAndHash['filehash']
+
+		found = False
+
+		if inSortedList(filehash, sortedHashes) and inSortedList(filename, sortedNames):
+			found = True
+
+		elif inSortedList(filehash, sortedHashes) and not inSortedList(filename, sortedNames):
+			found = True
+
+		elif inSortedList(filename, sortedNames) and not inSortedList(filehash, sortedHashes):
+			found = True
+
+		else:
+			sortedNames.append(filename)
+			sortedNames.sort()
+			sortedFilepath.append(fileAndHash['file'])
+			sortedFilepath.sort()
+			sortedHashes.append(filehash)
+			sortedHashes.sort()
+
+	return sortedFilepath
 
 
 def main():
@@ -112,35 +269,21 @@ def main():
 			print(f"[-] Broken repo: {repo}")
 
 	tempDirContents = makeDirDict("./tmp")
-	outDirContents = []
-	print(f"[*] Deduping downloaded files...")
+	print(f"[*] Deduping downloaded files {len(tempDirContents)}...")
 
-	sortedNames = []
-	sortedHashes = []
+	print(f" > First deduplication based on filehash or filename...")
+	first_deduped_files = first_deduplication(tempDirContents)
+	print(f" > Resulting files: {len(first_deduped_files)}")
 
-	for fileAndHash in tempDirContents:
-		filename = fileAndHash['file'].split("/")[-1]
-		filehash = fileAndHash['filehash']
+	print(f" > Second deduplication based on hash of template code (without id and info)...")
+	second_deduped_files = second_deduplication(first_deduped_files)
+	print(f" > Resulting files: {len(second_deduped_files)}")
 
-		found = False
+	print(f" > Third deduplication based on levenshtein distance of templates...")
+	third_deduped_files = third_deduplication(second_deduped_files)
+	print(f" > Resulting files: {len(third_deduped_files)}")
 
-		if inSortedList(filehash, sortedHashes) and inSortedList(filename, sortedNames):
-			found = True
-
-		elif inSortedList(filehash, sortedHashes) and not inSortedList(filename, sortedNames):
-			found = True
-
-		elif inSortedList(filename, sortedNames) and not inSortedList(filehash, sortedHashes):
-			found = True
-
-		else:
-			outDirContents.append(fileAndHash)
-			sortedNames.append(filename)
-			sortedNames.sort()
-			sortedHashes.append(filehash)
-			sortedHashes.sort()
-
-	populateDirectories(outDirContents)
+	populateDirectories(third_deduped_files)
 
 	print(f"[*] Total templates: {len(tempDirContents)}")
 	print(f"[*] Unique templates: {len(os.listdir('./templates-latest/'))}")
